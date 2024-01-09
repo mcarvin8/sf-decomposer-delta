@@ -12,8 +12,8 @@ logging.basicConfig(format='%(message)s', level=logging.DEBUG)
 def parse_args():
     """Function to pass required arguments."""
     parser = argparse.ArgumentParser(description='A script to build a manifest from the git diff.')
-    parser.add_argument('-f', '--from_ref')
-    parser.add_argument('-t', '--to_ref')
+    parser.add_argument('-f', '--from', dest='from_value')
+    parser.add_argument('-t', '--to', dest='to_value')
     parser.add_argument('-j', '--json', default='metadata.json')
     parser.add_argument('-m', '--manifest', default='package.xml')
     parser.add_argument('-d', '--directory', default='force-app/main/default')
@@ -160,6 +160,6 @@ def main(from_commit_sha, to_commit_sha, metadata_json, manifest, source_folder)
 
 if __name__ == '__main__':
     inputs = parse_args()
-    main(inputs.from_ref, inputs.to_ref,
+    main(inputs.from_value, inputs.to_value,
          inputs.json, inputs.manifest,
          inputs.directory)

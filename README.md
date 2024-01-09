@@ -31,13 +31,13 @@ The running environment requires Python 3 and the Git Bash.
 
 The `sfpygit_delta.py` script supports the following arguments:
 
-- `-f` - commit sha from where the diff is done (example - HEAD^1 or HEAD~1 )
-- `-t` - commit sha to where the diff is done (example - HEAD)
-- `-j` - path to metadata json file [default - `metadata.json`]
-- `-m` - output delta manifest file [default - `package.xml`]
-- `-d` - source directory for metadata  [default - `force-app/main/default`]
+- `-f`/`--from` - commit sha from where the diff is done (example - HEAD^1 or HEAD~1 )
+- `-t`/`--to` - commit sha to where the diff is done (example - HEAD)
+- `-j`/`--json` - path to metadata json file [default - `metadata.json`]
+- `-m`/`--manifest` - output delta manifest file [default - `package.xml`]
+- `-d`/`--directory` - source directory for metadata  [default - `force-app/main/default`]
 
-`python3 ./sfpygit_delta.py -f "commit_sha" -t "commit_sha"`
+`python3 ./sfpygit_delta.py --from  "commit_sha" --to "commit_sha"`
 
 The script will create the delta manifest file with the additions/changes to metadata and the delta destructive changes manifest files, if any files were deleted. 
 - An empty package.xml for destructive deployments is required with the `destructiveChanges/destructiveChanges.xml`.

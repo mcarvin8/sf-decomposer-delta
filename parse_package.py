@@ -18,7 +18,7 @@ ns = {'sforce': 'http://soap.sforce.com/2006/04/metadata'}
 def parse_args():
     """Function to parse required arguments."""
     parser = argparse.ArgumentParser(description='A script to scan the package for specific types.')
-    parser.add_argument('-m', '--manifest', default='./manifest/package.xml')
+    parser.add_argument('-m', '--manifest', default='./package.xml')
     args = parser.parse_args()
     return args
 
