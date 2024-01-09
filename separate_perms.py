@@ -32,31 +32,17 @@ def write_xml(contents, file_name):
     # Remove existing XML declaration
     formatted_xml = '\n'.join(line for line in formatted_xml.split('\n') if not line.strip().startswith('<?xml'))
 
-    with open(file_name, 'wb') as file:
-        file.write(xml_header.encode('utf-8'))
-        file.write(formatted_xml.encode('utf-8'))
-
-
-def create_single_element_xml_file(tag_name, value, perm_directory, parent_perm_name):
-    """Create a new XML file for a single element."""
-    output_filename = f'{perm_directory}/{parent_perm_name}.{tag_name}.xml'
-    # Create an ElementTree with a root element
-    root = ET.Element(tag_name)
-
-    # Set the text content for the element
-    root.text = value
-
-    # Create an ElementTree object
-    tree = ET.ElementTree(root)
-
-    write_xml(tree, output_filename)
-    logging.info('Saved %s element content to %s', tag_name, output_filename)
+    try:
+        with open(file_name, 'wb') as file:
+            file.write(xml_header.encode('utf-8'))
+            file.write(formatted_xml.encode('utf-8'))
+    except Exception as e:
+        logging.info('ERROR writing file: %s', file_name)
+        logging.info('%s', e)
 
 
 def create_sub_element_xml_file(label, perm_directory, parent_perm_name, tag, full_name):
     """Create a new XML file for a element with sub-elements."""
-    output_filename = f'{perm_directory}/{parent_perm_name}.{tag}_{full_name}.xml'
-
     # Remove the namespace prefix from the element tags
     for element in label.iter():
         if '}' in element.tag:
@@ -112,7 +98,6 @@ def separate_perms(perm_directory):
     # Iterate through the directory to process files
     for filename in os.listdir(perm_directory):
         if filename.endswith(".permissionset-meta.xml"):
-            logging.info(filename)
             process_perm_file(perm_directory, filename)
 
 
