@@ -1490,7 +1490,6 @@
       "key": "fullName"
     },
     {
-      "childXmlNames": false,
       "directoryName": "workflows",
       "inFolder": true,
       "useFoldername": true,

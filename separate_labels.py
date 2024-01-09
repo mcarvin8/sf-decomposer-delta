@@ -20,7 +20,7 @@ def parse_args():
 
 def create_xml_file(label, parent_directory, tag, full_name):
     """Create a new XML file for a given element."""
-    output_filename = f'{parent_directory}/{full_name}.xml'
+    output_filename = f'{parent_directory}/{full_name}.label-meta.xml'
 
     # Remove the namespace prefix from the element tags
     for element in label.iter():

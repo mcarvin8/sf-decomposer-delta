@@ -62,6 +62,11 @@ def create_sub_element_xml_file(label, perm_directory, parent_perm_name, tag, fu
         if '}' in element.tag:
             element.tag = element.tag.split('}')[1]
 
+    subfolder = os.path.join(perm_directory, parent_perm_name, label.tag)
+    os.makedirs(subfolder, exist_ok=True)  # Ensure the subfolder exists
+
+    output_filename = f'{subfolder}/{full_name}.{label.tag}-meta.xml'
+
     # Create a new XML ElementTree with the label as the root
     tree = ET.ElementTree(label)
 
@@ -78,10 +83,16 @@ def process_perm_file(perm_directory, filename):
     tree = ET.parse(perm_file_path)
     root = tree.getroot()
 
+    # do not add Salesforce namespace to avoid prefix issues in combine_perms.py
+    single_elements = ET.Element('PermissionSet')
+
     # Extract values for invididual elements
     for element in root.findall('sforce:*', ns):
         if not element.text.isspace():
-            create_single_element_xml_file(element.tag.split('}')[1], element.text, perm_directory, parent_perm_name)
+            # Append single elements to the root
+            single_element = ET.Element(element.tag.split('}')[1])
+            single_element.text = element.text
+            single_elements.append(single_element)
         else:
             for _, label in enumerate(element):
                 if label.tag.split('}')[1] in NAME_TAGS:
@@ -89,12 +100,19 @@ def process_perm_file(perm_directory, filename):
                     break
             create_sub_element_xml_file(element, perm_directory, parent_perm_name, element.tag.split('}')[1], name_tag)
 
+    # Create an ElementTree object with the single element root
+    single_tree = ET.ElementTree(single_elements)
+
+    # Save the single element ElementTree to a meta file directly in the parent perm folder
+    write_xml(single_tree, os.path.join(perm_directory, parent_perm_name, f'{parent_perm_name}.permissionset-meta.xml'))
+
 
 def separate_perms(perm_directory):
     """Separate perm sets into individual XML files."""
     # Iterate through the directory to process files
     for filename in os.listdir(perm_directory):
         if filename.endswith(".permissionset-meta.xml"):
+            logging.info(filename)
             process_perm_file(perm_directory, filename)
 
 

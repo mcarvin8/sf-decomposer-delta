@@ -28,7 +28,10 @@ def create_xml_file(label, workflow_directory, parent_workflow_name, tag, full_n
     # Remove the namespace prefix from the tag
     tag_without_namespace = tag.split('}')[-1] if '}' in tag else tag
 
-    output_filename = f'{workflow_directory}/{parent_workflow_name}.{tag_without_namespace}_{full_name}.xml'
+    subfolder = os.path.join(workflow_directory, parent_workflow_name, tag_without_namespace)
+    os.makedirs(subfolder, exist_ok=True)  # Ensure the subfolder exists
+
+    output_filename = f'{subfolder}/{full_name}.{tag_without_namespace}-meta.xml'
 
     # Remove the namespace prefix from the element tags
     for element in label.iter():

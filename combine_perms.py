@@ -22,14 +22,20 @@ def read_individual_xmls(perm_directory, manifest, package_perms):
     """Read each XML file."""
     individual_xmls = {}
 
-    for filename in os.listdir(perm_directory):
-        if filename.endswith('.xml') and not filename.endswith('.permissionset-meta.xml'):
-            parent_perm_name = filename.split('.')[0]
-            if not manifest or (manifest and parent_perm_name in package_perms):
-                individual_xmls.setdefault(parent_perm_name, [])
-                tree = ET.parse(os.path.join(perm_directory, filename))
-                root = tree.getroot()
-                individual_xmls[parent_perm_name].append(root)
+    def process_perm_file(filepath):
+        tree = ET.parse(filepath)
+        root = tree.getroot()
+        parent_perm_name = filepath.split(os.path.sep)[-3]  # Get parent folder name
+        individual_xmls.setdefault(parent_perm_name, []).append(root)
+
+    for root, _, files in os.walk(perm_directory):
+        for filename in files:
+            if filename.endswith('.xml') and not filename.endswith('.permissionset-meta.xml'):
+                file_path = os.path.join(root, filename)
+                relative_path = os.path.relpath(file_path, perm_directory)
+                parent_perm_name = relative_path.split(os.path.sep)[0]
+                if not manifest or (manifest and parent_perm_name in package_perms):
+                    process_perm_file(file_path)
 
     return individual_xmls
 
@@ -69,6 +75,18 @@ def merge_xml_content(individual_xmls):
 def format_and_write_xmls(merged_xmls, perm_directory):
     """Create the final XMLs."""
     for parent_perm_name, parent_perm_root in merged_xmls.items():
+        # Load the parent perm set meta file with the label, description, and license first
+        existing_perm_file_path = os.path.join(perm_directory, parent_perm_name, f'{parent_perm_name}.permissionset-meta.xml')
+        if os.path.exists(existing_perm_file_path):
+            existing_tree = ET.parse(existing_perm_file_path)
+            existing_root = existing_tree.getroot()
+
+            # Iterate through the sub-elements in the existing permission set
+            for existing_sub_element in existing_root:
+                # Check if the sub-element is not already present in the merged XML
+                if not any(existing_sub_element.tag == child.tag for child in parent_perm_root):
+                    parent_perm_root.append(existing_sub_element)
+
         parent_xml_str = ET.tostring(parent_perm_root, encoding='utf-8').decode('utf-8')
         formatted_xml = minidom.parseString(parent_xml_str).toprettyxml(indent="    ")
 
@@ -92,7 +110,7 @@ def combine_perms(perm_directory, manifest, package_perms):
 
     if manifest:
         logging.info("The permission sets for %s have been compiled for deployments.",
-                    ', '.join(map(str, package_perms)))
+                     ', '.join(map(str, package_perms)))
     else:
         logging.info('The permission sets have been compiled for deployments.')
 

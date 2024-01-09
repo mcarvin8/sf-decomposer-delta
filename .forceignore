@@ -5,9 +5,9 @@
 package.xml
 
 # Ignore all labels, perms, workflows XMLs by default
-**/permissionsets/*.xml
+**/permissionsets/**/*.xml
 **/labels/*.xml
-**/workflows/*.xml
+**/workflows/**/*.xml
 
 # Allow the meta files
 !**/permissionsets/*.permissionset-meta.xml

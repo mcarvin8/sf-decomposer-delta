@@ -9,7 +9,7 @@ logging.basicConfig(format='%(message)s', level=logging.DEBUG)
 
 def parse_args():
     """Function to parse command line arguments."""
-    parser = argparse.ArgumentParser(description='A script to create workflows.')
+    parser = argparse.ArgumentParser(description='A script to combine workflows for deployments.')
     parser.add_argument('-d', '--directory', default='force-app/main/default/workflows')
     parser.add_argument('-m', '--manifest', default=False, action='store_true')
     parser.add_argument('-w', '--workflows', default=None)
@@ -20,13 +20,21 @@ def parse_args():
 def read_individual_xmls(workflow_directory, manifest, package_workflows):
     """Read each XML file."""
     individual_xmls = {}
-    for filename in os.listdir(workflow_directory):
-        parent_workflow_name = filename.split('.')[0]
-        if filename.endswith('.xml') and not filename.endswith('.workflow-meta.xml') and (not manifest or (manifest and parent_workflow_name in package_workflows)):
-            individual_xmls.setdefault(parent_workflow_name, [])
-            tree = ET.parse(os.path.join(workflow_directory, filename))
-            root = tree.getroot()
-            individual_xmls[parent_workflow_name].append(root)
+
+    def process_workflow_file(filepath):
+        tree = ET.parse(filepath)
+        root = tree.getroot()
+        parent_workflow_name = filepath.split(os.path.sep)[-3]  # Get parent folder name
+        individual_xmls.setdefault(parent_workflow_name, []).append(root)
+
+    for root, _, files in os.walk(workflow_directory):
+        for filename in files:
+            if filename.endswith('.xml') and not filename.endswith('.workflow-meta.xml'):
+                file_path = os.path.join(root, filename)
+                relative_path = os.path.relpath(file_path, workflow_directory)
+                parent_workflow_name = relative_path.split(os.path.sep)[0]
+                if not manifest or (manifest and parent_workflow_name in package_workflows):
+                    process_workflow_file(file_path)
 
     # Sort by workflow type and then alphabetically
     sorted_individual_xmls = {k: sorted(v, key=lambda x: x.tag) for k, v in sorted(individual_xmls.items())}
@@ -80,7 +88,7 @@ def combine_workflows(workflow_directory, manifest, package_workflows):
 
     if manifest:
         logging.info("The workflows for %s have been compiled for deployments.",
-                    ', '.join(map(str, package_workflows)))
+                     ', '.join(map(str, package_workflows)))
     else:
         logging.info('The workflows have been compiled for deployments.')
 

@@ -102,7 +102,6 @@ The JSON file was created from the SFDX git delta plugin (v59.json) and updated 
 - Workflows updates to use `inFolder` and `useFoldername` keys due to the directory structure updates made by the workflow scripts (`separate_workflows.py` and `combine_workflows.py`)
 ``` json
     {
-      "childXmlNames": false,
       "directoryName": "workflows",
       "inFolder": true,
       "useFoldername": true,
@@ -145,8 +144,8 @@ To only use the custom updates for Custom Labels:
 - Update `parse_package.py` to remove workflows and permission sets, if you wish to use this script.
 - Remove these lines from the `.forceignore` file:
 ```
-**/permissionsets/*.xml
-**/workflows/*.xml
+**/permissionsets/**/*.xml
+**/workflows/**/*.xml
 
 !**/permissionsets/*.permissionset-meta.xml
 !**/workflows/*.workflow-meta.xml
@@ -154,12 +153,12 @@ To only use the custom updates for Custom Labels:
 
 - Remove these lines from the `.gitignore` file:
 ```
-*.permissionset-meta.xml
+force-app/main/default/permissionsets/*.permissionset-meta.xml
 *.workflow-meta.xml
 ```
 
 - Update the Metadata JSON file as such to revert to the default attributes for Workflows and Permission Sets.
-    - Workflows should still set `childXmlNames` to false as long as the Salesforce CLI bug is open.
+    - Workflows should still omit `childXmlNames` as deploying workflow children is still broken through the Salesforce CLI.
 ``` json
   {
     "directoryName": "permissionsets",
@@ -172,7 +171,6 @@ To only use the custom updates for Custom Labels:
 
 ``` json
     {
-      "childXmlNames": false,
       "directoryName": "workflows",
       "inFolder": false,
       "metaFile": false,

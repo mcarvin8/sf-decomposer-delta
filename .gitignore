@@ -51,6 +51,6 @@ __pycache__/
 *$py.class
 
 # Ignore permission sets, workflows, labels created by retrievals
-*.permissionset-meta.xml
+force-app/main/default/permissionsets/*.permissionset-meta.xml
 CustomLabels.labels-meta.xml
 *.workflow-meta.xml

@@ -23,8 +23,9 @@ def read_individual_xmls(label_directory, manifest, package_labels):
     """Read each XML file."""
     individual_xmls = []
     for file_path in os.listdir(label_directory):
-        # Get file name without extension
+        # Get file name without meta extension
         file_name, _ = os.path.splitext(os.path.basename(file_path))
+        file_name = file_name.split('.')[0]
         if (not manifest or (manifest and file_name in package_labels)) and file_path.endswith('.xml') and not file_path.endswith('.labels-meta.xml'):
             tree = ET.parse(os.path.join(label_directory, file_path))
             root = tree.getroot()
