@@ -1702,7 +1702,8 @@
     },
     {
       "directoryName": "profiles",
-      "inFolder": false,
+      "inFolder": true,
+      "useFoldername": true,
       "metaFile": false,
       "suffix": "profile",
       "xmlName": "Profile",

@@ -49,8 +49,3 @@ destructiveChanges/
 __pycache__/
 *.py[cod]
 *$py.class
-
-# Ignore permission sets, workflows, labels created by retrievals
-force-app/main/default/permissionsets/*.permissionset-meta.xml
-CustomLabels.labels-meta.xml
-*.workflow-meta.xml
