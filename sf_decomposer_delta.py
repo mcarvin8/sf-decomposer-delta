@@ -81,6 +81,9 @@ def determine_metadata_type(git_diffs, metadata_json_file, source_folders):
 
     metadata_mapping = {metadata['directoryName']: metadata for metadata in metadata_types}
 
+    # Apply overrides based on config JSON file
+    metadata_mapping = override_metadata_suffixes(metadata_mapping)
+
     changes = {}
 
     for filepath in git_diffs:
@@ -137,10 +140,31 @@ def create_package_file(items, output_file):
         package_file.write(package_contents)
 
 
+def override_metadata_suffixes(metadata_mapping):
+    """Override metadata.json entries for specified metadataSuffixes."""
+    with open('.sfdecomposer.config.json', 'r', encoding='utf-8') as config_json:
+        config = json.load(config_json)
+
+    # Split metadataSuffixes by comma and remove whitespaces
+    suffixes = [suffix.strip() for suffix in config['metadataSuffixes'].split(',')]
+
+    # Apply overrides to metadata_mapping for each suffix unless labels
+    for suffix in suffixes:
+        for _, metadata_info in metadata_mapping.items():
+            if metadata_info['suffix'] == suffix and suffix != 'labels':
+                metadata_info['inFolder'] = True
+                metadata_info['useFoldername'] = True
+                logging.info("Overriding metadata for suffix '%s': inFolder=True, useFoldername=True",
+                             suffix)
+
+    return metadata_mapping
+
+
 def main(from_commit_sha, to_commit_sha, metadata_json, manifest):
     """Main function."""
     source_folders = get_package_directories.main('sfdx-project.json')
-    metadata_changes, destructive_changes = get_git_diff_changes(from_commit_sha, to_commit_sha, source_folders)
+    metadata_changes, destructive_changes = get_git_diff_changes(from_commit_sha, to_commit_sha,
+                                                                 source_folders)
 
     metadata_changes = determine_metadata_type(metadata_changes, metadata_json, source_folders)
 
@@ -156,8 +180,10 @@ def main(from_commit_sha, to_commit_sha, metadata_json, manifest):
             os.mkdir(destructive_directory)
         except FileExistsError:
             pass
-        destructive_metadata_changes = determine_metadata_type(destructive_changes, metadata_json, source_folders)
-        create_package_file(destructive_metadata_changes, f'{destructive_directory}/destructiveChanges.xml')
+        destructive_metadata_changes = determine_metadata_type(destructive_changes,
+                                                               metadata_json, source_folders)
+        create_package_file(destructive_metadata_changes,
+                            f'{destructive_directory}/destructiveChanges.xml')
         # empty package.xml required for destructive deployments
         create_package_file({}, f'{destructive_directory}/package.xml')
         logging.info('Destructive manifest file created at: %s', 'destructiveChanges.xml')
